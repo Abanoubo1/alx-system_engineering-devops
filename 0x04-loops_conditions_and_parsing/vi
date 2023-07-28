@@ -3,4 +3,4 @@
 
 while IFS=':' read -r username uid homedir; do
     echo "$username:$uid:$homedir"
-done < /etc/passwd
+done < /etc/passw
