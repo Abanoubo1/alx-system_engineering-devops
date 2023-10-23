@@ -1,18 +1,30 @@
 #!/usr/bin/python3
-"""Exports to-do list information for a given employee ID to CSV format."""
-import csv
+'''A script that gathers employee name completed
+tasks and total number of tasks from an typicode API
+'''
+
+import re
 import requests
 import sys
 
-if __name__ == "__main__":
-    user_id = sys.argv[1]
-    url = "https://jsonplaceholder.typicode.com/"
-    user = requests.get(url + "users/{}".format(user_id)).json()
-    username = user.get("username")
-    todos = requests.get(url + "todos", params={"userId": user_id}).json()
+REST_API = "https://jsonplaceholder.typicode.com"
 
-    with open("{}.csv".format(user_id), "w", newline="") as csvfile:
-        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        [writer.writerow(
-            [user_id, username, t.get("completed"), t.get("title")]
-         ) for t in todos]
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        if re.fullmatch(r'\d+', sys.argv[1]):
+            id = int(sys.argv[1])
+            emp_req = requests.get('{}/users/{}'.format(REST_API, id)).json()
+            task_req = requests.get('{}/todos'.format(REST_API)).json()
+            emp_name = emp_req.get('username')
+            tasks = list(filter(lambda x: x.get('userId') == id, task_req))
+            # Write the data to a CSV file
+            with open('{}.csv'.format(id), 'w') as file:
+                for task in tasks:
+                    file.write(
+                        '"{}","{}","{}","{}"\n'.format(
+                            id,
+                            emp_name,
+                            task.get('completed'),
+                            task.get('title')
+                        )
+                    )
